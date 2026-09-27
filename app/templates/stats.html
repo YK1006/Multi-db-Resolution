@@ -3,4 +3,12 @@
 {% block content %}
 <div class="page-heading"><div><p class="eyebrow">OPERATIONS / METRICS</p><h1>Processing statistics</h1><p class="lede">Recomputed from the repository when this page is opened.</p></div><span class="live-dot">Live snapshot</span></div>
 <div class="stats-grid">{% for stat in stats %}<div class="stat-row"><span>{{ stat.metric_name|replace('_',' ')|title }}</span><strong class="mono">{{ '{:,}'.format(stat.metric_value) }}</strong><small>{{ stat.updated_at.strftime('%Y-%m-%d %H:%M:%S') if stat.updated_at else '—' }}</small></div>{% else %}<p class="muted">No statistics available.</p>{% endfor %}</div>
+<section class="chart-grid" aria-label="Repository charts">
+	<div class="chart-panel"><div class="section-heading"><div><p class="eyebrow">RECORD DISTRIBUTION</p><h2>Records by source</h2></div></div>
+		{% if record_sources %}<div class="bar-list">{% for source in record_sources %}<div class="bar-row"><div class="bar-label"><span>{{ source.name }}</span><strong class="mono">{{ '{:,}'.format(source.record_count) }}</strong></div><div class="bar-track"><span class="bar-fill" style="width: {{ source.bar_percent }}%"></span></div></div>{% endfor %}</div>{% else %}<p class="muted">No source data to chart yet.</p>{% endif %}
+	</div>
+	<div class="chart-panel"><div class="section-heading"><div><p class="eyebrow">PIPELINE HEALTH</p><h2>Import batches by status</h2></div></div>
+		{% if batch_statuses %}<div class="bar-list">{% for batch in batch_statuses %}<div class="bar-row"><div class="bar-label"><span class="status status-{{ batch.status }}">{{ batch.status|replace('_',' ') }}</span><strong class="mono">{{ '{:,}'.format(batch.batch_count) }}</strong></div><div class="bar-track"><span class="bar-fill bar-fill-alt" style="width: {{ batch.bar_percent }}%"></span></div></div>{% endfor %}</div>{% else %}<p class="muted">No import batches to chart yet.</p>{% endif %}
+	</div>
+</section>
 {% endblock %}

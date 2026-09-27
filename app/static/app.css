@@ -134,6 +134,19 @@ label small { color: var(--muted); font-weight: 400; }
 .stat-row > span { color: var(--muted); font-size: 13px; }
 .stat-row strong { font-size: 20px; font-weight: 500; }
 .stat-row small { color: #8a9995; font: 10px var(--mono); }
+.chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 36px; }
+.chart-panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 6px; background: var(--white); }
+.chart-panel .section-heading { margin-bottom: 22px; }
+.chart-panel h2 { font-size: 17px; }
+.bar-list { display: grid; gap: 17px; }
+.bar-row { min-width: 0; }
+.bar-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 7px; font-size: 12px; }
+.bar-label > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { height: 7px; overflow: hidden; border-radius: 4px; background: #e8efec; }
+.bar-fill { display: block; height: 100%; min-width: 2px; border-radius: inherit; background: var(--teal); }
+.bar-fill-alt { background: var(--amber); }
+.button-danger { border-color: #e2c8c5; color: var(--red); background: #fff; }
+.button-danger:hover { border-color: var(--red); color: white; background: var(--red); }
 .live-dot { color: var(--teal); font: 11px var(--mono); }
 .live-dot::before { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: #22a578; content: ""; }
 .footer { min-height: 58px; display: flex; align-items: center; justify-content: space-between; padding: 0 max(24px, calc((100vw - 1180px) / 2)); border-top: 1px solid var(--line); color: var(--muted); background: white; font-size: 11px; }
@@ -155,6 +168,7 @@ label small { color: var(--muted); font-weight: 400; }
   .span-two { grid-column: auto; }
   .form-panel, .job-panel { padding: 18px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .chart-grid { grid-template-columns: 1fr; }
   .field-row { grid-template-columns: 1fr; gap: 9px; }
   .field-source { text-align: left; }
   .footer { align-items: flex-start; flex-direction: column; justify-content: center; gap: 4px; padding: 12px 18px; }

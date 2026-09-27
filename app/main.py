@@ -58,14 +58,59 @@ def dashboard(request: Request):
 def sources_page(request: Request):
     with get_connection() as connection:
         rows = connection.execute(
-            """SELECT s.id, s.name, s.type, s.uploaded_by, s.created_at, b.status, b.progress,
-                      coalesce(rc.record_count, 0) AS record_count
+                """SELECT s.id, s.name, s.type, s.uploaded_by, s.created_at, b.status, b.progress,
+                      coalesce(rc.record_count, 0) AS record_count,
+                      EXISTS (SELECT 1 FROM import_batches active WHERE active.source_id = s.id
+                          AND active.status IN ('inspecting', 'cleaning', 'indexing', 'matching', 'enriching')) AS is_processing
                FROM sources s
                LEFT JOIN LATERAL (SELECT status, progress FROM import_batches WHERE source_id = s.id ORDER BY id DESC LIMIT 1) b ON true
                LEFT JOIN LATERAL (SELECT count(*) AS record_count FROM raw_records WHERE source_id = s.id) rc ON true
                ORDER BY s.created_at DESC"""
         ).fetchall()
     return _render(request, "sources.html", sources=rows)
+
+
+@app.post("/sources/{source_id}/delete")
+def delete_source(source_id: int):
+    with get_connection() as connection:
+        source = connection.execute("SELECT id, name FROM sources WHERE id = %s", (source_id,)).fetchone()
+        if not source:
+            raise HTTPException(status_code=404, detail="Source not found")
+        active_batch = connection.execute(
+            """SELECT id FROM import_batches WHERE source_id = %s
+               AND status IN ('inspecting', 'cleaning', 'indexing', 'matching', 'enriching') LIMIT 1""",
+            (source_id,),
+        ).fetchone()
+        if active_batch:
+            raise HTTPException(status_code=409, detail="Cannot delete a source while an import is processing")
+        file_paths = connection.execute(
+            "SELECT file_path FROM import_batches WHERE source_id = %s AND file_path IS NOT NULL", (source_id,)
+        ).fetchall()
+        record_ids = [row["id"] for row in connection.execute(
+            "SELECT id FROM raw_records WHERE source_id = %s", (source_id,)
+        ).fetchall()]
+        if record_ids:
+            connection.execute("DELETE FROM entity_fields WHERE source_raw_record_id = ANY(%s)", (record_ids,))
+            connection.execute("DELETE FROM entity_records WHERE raw_record_id = ANY(%s)", (record_ids,))
+            connection.execute("DELETE FROM identifiers WHERE raw_record_id = ANY(%s)", (record_ids,))
+            connection.execute("DELETE FROM raw_records WHERE id = ANY(%s)", (record_ids,))
+        connection.execute("DELETE FROM field_mappings WHERE source_id = %s", (source_id,))
+        connection.execute(
+            "DELETE FROM entity_fields ef WHERE NOT EXISTS (SELECT 1 FROM entity_records er WHERE er.entity_id = ef.entity_id)"
+        )
+        connection.execute(
+            "DELETE FROM entity_enrichment_trail et WHERE NOT EXISTS (SELECT 1 FROM entity_records er WHERE er.entity_id = et.entity_id)"
+        )
+        connection.execute("DELETE FROM entities e WHERE NOT EXISTS (SELECT 1 FROM entity_records er WHERE er.entity_id = e.id)")
+        connection.execute("DELETE FROM import_batches WHERE source_id = %s", (source_id,))
+        connection.execute("DELETE FROM sources WHERE id = %s", (source_id,))
+
+    upload_root = UPLOAD_DIR.resolve()
+    for row in file_paths:
+        path = Path(row["file_path"]).resolve()
+        if path.parent == upload_root:
+            path.unlink(missing_ok=True)
+    return RedirectResponse(url="/sources", status_code=303)
 
 
 @app.get("/sources/new", response_class=HTMLResponse)
@@ -201,6 +246,12 @@ def job_status(batch_id: int):
 @app.get("/search", response_class=HTMLResponse)
 def search(request: Request, q: str = ""):
     results = []
+    with get_connection() as connection:
+        source_preview = connection.execute(
+            """SELECT s.id, s.name, s.type, count(r.id)::bigint AS record_count
+               FROM sources s LEFT JOIN raw_records r ON r.source_id = s.id
+               GROUP BY s.id ORDER BY s.created_at DESC LIMIT 5"""
+        ).fetchall()
     if q.strip():
         candidates = []
         email = normalize_email(q)
@@ -229,7 +280,7 @@ def search(request: Request, q: str = ""):
                        GROUP BY e.id ORDER BY e.id""",
                     (list(resolved),),
                 ).fetchall()
-    return _render(request, "search_results.html", query=q, results=results)
+    return _render(request, "search_results.html", query=q, results=results, source_preview=source_preview)
 
 
 @app.get("/entities/{entity_id}", response_class=HTMLResponse)
@@ -261,4 +312,18 @@ def stats_page(request: Request):
     recompute_stats()
     with get_connection() as connection:
         stats = connection.execute("SELECT metric_name, metric_value, updated_at FROM stats ORDER BY metric_name").fetchall()
-    return _render(request, "stats.html", stats=stats)
+        record_sources = connection.execute(
+            """SELECT s.name, count(r.id)::bigint AS record_count FROM sources s
+               LEFT JOIN raw_records r ON r.source_id = s.id GROUP BY s.id
+               ORDER BY record_count DESC, s.name LIMIT 8"""
+        ).fetchall()
+        batch_statuses = connection.execute(
+            "SELECT status, count(*)::bigint AS batch_count FROM import_batches GROUP BY status ORDER BY batch_count DESC, status"
+        ).fetchall()
+    max_records = max((row["record_count"] for row in record_sources), default=0)
+    max_batches = max((row["batch_count"] for row in batch_statuses), default=0)
+    for row in record_sources:
+        row["bar_percent"] = round(row["record_count"] * 100 / max_records) if max_records else 0
+    for row in batch_statuses:
+        row["bar_percent"] = round(row["batch_count"] * 100 / max_batches) if max_batches else 0
+    return _render(request, "stats.html", stats=stats, record_sources=record_sources, batch_statuses=batch_statuses)

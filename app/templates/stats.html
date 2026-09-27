@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Stats{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">OPERATIONS / METRICS</p><h1>Processing statistics</h1><p class="lede">Recomputed from the repository when this page is opened.</p></div><span class="live-dot">Live snapshot</span></div>
+<div class="stats-grid">{% for stat in stats %}<div class="stat-row"><span>{{ stat.metric_name|replace('_',' ')|title }}</span><strong class="mono">{{ '{:,}'.format(stat.metric_value) }}</strong><small>{{ stat.updated_at.strftime('%Y-%m-%d %H:%M:%S') if stat.updated_at else '—' }}</small></div>{% else %}<p class="muted">No statistics available.</p>{% endfor %}</div>
+{% endblock %}

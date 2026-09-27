@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Batch #{{ batch_id }}{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">IMPORTS / BATCH #{{ batch_id }}</p><h1>Processing status</h1><p class="lede">This view refreshes automatically while the batch runs.</p></div><a class="text-link" href="/sources">All sources →</a></div>
+<section class="job-panel" id="job" data-status-url="/jobs/{{ batch_id }}/status">
+  <div class="job-top"><span class="eyebrow">PIPELINE</span><span id="job-status" class="status">Loading</span></div>
+  <div class="job-progress"><div class="progress-track"><span id="job-bar" style="width:0%"></span></div><strong id="job-percent">0%</strong></div>
+  <p id="job-message" class="muted">Fetching batch status…</p>
+  <div class="job-meta"><span>Rows processed <strong id="job-rows">—</strong></span><span>Batch <strong>#{{ batch_id }}</strong></span></div>
+  <pre id="job-errors" class="error-log" hidden></pre>
+</section>
+<script>
+const job = document.getElementById('job');
+async function refreshJob() {
+  try {
+    const response = await fetch(job.dataset.statusUrl, {cache: 'no-store'});
+    if (!response.ok) throw new Error('Status unavailable');
+    const data = await response.json();
+    const status = document.getElementById('job-status');
+    status.textContent = data.status.replaceAll('_', ' ');
+    status.className = `status status-${data.status}`;
+    const progress = Number(data.progress || 0);
+    document.getElementById('job-bar').style.width = `${progress}%`;
+    document.getElementById('job-percent').textContent = `${progress}%`;
+    document.getElementById('job-rows').textContent = `${data.last_processed_row || 0}${data.total_rows ? ` / ${data.total_rows}` : ''}`;
+    document.getElementById('job-message').textContent = data.status === 'completed' ? 'Batch complete. The unified repository is ready.' : data.status === 'completed_with_errors' ? 'Batch stopped with errors. Review the log below.' : 'Processing continues in the background.';
+    const errors = document.getElementById('job-errors');
+    if (data.error_log) { errors.hidden = false; errors.textContent = data.error_log; }
+    if (!['completed', 'completed_with_errors'].includes(data.status)) window.setTimeout(refreshJob, 2000);
+  } catch (error) {
+    document.getElementById('job-message').textContent = 'Unable to reach the status endpoint. Retrying…';
+    window.setTimeout(refreshJob, 2000);
+  }
+}
+refreshJob();
+</script>
+{% endblock %}

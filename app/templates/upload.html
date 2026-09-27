@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Add source{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">SOURCES / NEW IMPORT</p><h1>Add a data source</h1><p class="lede">Files are inspected first. Records are stored after you confirm the field mapping.</p></div></div>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+<form class="form-panel" action="/sources/upload" method="post" enctype="multipart/form-data">
+  <div class="form-grid">
+    <label>Source name<input name="name" required maxlength="180" placeholder="e.g. HR Database"></label>
+    <label>Uploaded by<input name="uploaded_by" required maxlength="180" placeholder="Name or team"></label>
+    <label class="span-two">Source file<input type="file" name="file" accept=".csv,.sql" required><small>CSV or SQL INSERT dump</small></label>
+    <label class="span-two">Part label <span class="optional">OPTIONAL</span><input name="part_label" maxlength="180" placeholder="e.g. 2026 Q3, part 2"></label>
+  </div>
+  <div class="form-actions"><a class="text-link" href="/sources">Cancel</a><button class="button" type="submit">Inspect and map <span aria-hidden="true">→</span></button></div>
+</form>
+{% endblock %}

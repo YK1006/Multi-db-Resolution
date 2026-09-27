@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Review mapping{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">SOURCES / MAPPING REVIEW / BATCH #{{ batch_id }}</p><h1>Confirm source fields</h1><p class="lede">{{ source_name }} · Review each suggestion before records are committed.</p></div></div>
+<form action="/sources/{{ source_id }}/confirm-mapping" method="post">
+  <input type="hidden" name="batch_id" value="{{ batch_id }}">
+  {% for table in tables %}<section class="mapping-section"><div class="section-heading"><div><p class="eyebrow">TABLE</p><h2>{{ table.table_name }}</h2></div><span class="count-label">{{ table.columns|length }} columns</span></div>
+  <div class="table-wrap"><table><thead><tr><th>Original column</th><th>Sample value</th><th>Canonical field</th></tr></thead><tbody>
+  {% for mapping in mappings if mapping.table_name == table.table_name %}<tr><td class="mono">{{ mapping.original_column }}</td><td class="sample-value">{{ table.sample_rows[0].get(mapping.original_column, '') if table.sample_rows else 'No sample available' }}</td><td><select name="mapping_{{ mapping.id }}" aria-label="Map {{ mapping.original_column }}">{% for option in ['email','phone','name','username','member_id','company','address','ignore'] %}<option value="{{ option }}" {% if mapping.canonical_field == option %}selected{% endif %}>{{ option|replace('_',' ')|title if option != 'ignore' else 'Ignore this column' }}</option>{% endfor %}</select></td></tr>{% endfor %}
+  </tbody></table></div></section>{% endfor %}
+  <div class="form-actions"><a class="text-link" href="/sources">Cancel</a><button class="button" type="submit">Confirm and process <span aria-hidden="true">→</span></button></div>
+</form>
+{% endblock %}

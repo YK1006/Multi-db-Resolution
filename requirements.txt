@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+pandas
+psycopg[binary]
+python-dotenv
+requests
+faker
+sqlparse

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ source.name }}{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow"><a href="/sources">SOURCES</a> / SOURCE #{{ source.id }}</p><h1>{{ source.name }}</h1><p class="lede">{{ source.type|upper }} source · Uploaded by {{ source.uploaded_by or '—' }}</p></div></div>
+<section class="section-block"><div class="section-heading"><div><p class="eyebrow">INGESTED STRUCTURE</p><h2>Tables</h2></div></div>
+{% if tables %}<div class="table-wrap"><table><thead><tr><th>Table</th><th>Records</th></tr></thead><tbody>{% for table in tables %}<tr><td class="mono">{{ table.table_name }}</td><td>{{ table.record_count }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="muted">Records have not been ingested for this source yet.</p>{% endif %}</section>
+<section class="section-block"><div class="section-heading"><div><p class="eyebrow">FIELD REVIEW</p><h2>Mappings</h2></div></div>
+{% if mappings %}<div class="table-wrap"><table><thead><tr><th>Table</th><th>Original column</th><th>Canonical field</th><th>Confirmed</th></tr></thead><tbody>{% for mapping in mappings %}<tr><td>{{ mapping.table_name }}</td><td class="mono">{{ mapping.original_column }}</td><td>{{ mapping.canonical_field }}</td><td>{{ 'Yes' if mapping.confirmed else 'Pending' }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="muted">No mapping details available.</p>{% endif %}</section>
+{% endblock %}

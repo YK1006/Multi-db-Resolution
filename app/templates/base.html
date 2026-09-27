@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Entity Repository{% endblock %} | MER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Entity Repository home"><span class="brand-mark">M</span><span>MER<span class="brand-sub">/ repository</span></span></a>
+    <nav aria-label="Main navigation">
+      <a href="/">Overview</a><a href="/sources">Sources</a><a href="/search">Search</a><a href="/stats">Stats</a>
+    </nav>
+    <a class="button button-small" href="/sources/new"><span aria-hidden="true">+</span> Add source</a>
+  </header>
+  <main class="page">{% block content %}{% endblock %}</main>
+  <footer class="footer"><span>Multi-Database Entity Resolution</span><span>Unified records · traceable fields</span></footer>
+</body>
+</html>

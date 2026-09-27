@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">REPOSITORY / SEARCH</p><h1>Find an identity</h1><p class="lede">Search by email, phone, or username. Matching identifiers expand through linked records.</p></div></div>
+<form class="search-form" action="/search" method="get"><label class="sr-only" for="q">Email, phone, or username</label><input id="q" name="q" value="{{ query }}" placeholder="Email, phone, or username" autofocus><button class="button" type="submit">Search <span aria-hidden="true">⌕</span></button></form>
+{% if query %}<section class="section-block"><div class="section-heading"><div><p class="eyebrow">RESULTS FOR</p><h2 class="mono query-text">{{ query }}</h2></div><span class="count-label">{{ results|length }} entities</span></div>
+{% if results %}<div class="result-list">{% for entity in results %}<a class="result-row" href="/entities/{{ entity.id }}"><span class="entity-mark">E{{ '%04d'|format(entity.id) }}</span><span class="result-main"><strong>Entity #{{ entity.id }}</strong><small>{{ entity.record_count }} linked records · {{ entity.source_count }} sources</small></span><span class="status {{ 'status-completed' if not entity.is_new else 'status-uploaded' }}">{{ 'resolved' if not entity.is_new else 'new' }}</span><span class="arrow">↗</span></a>{% endfor %}</div>{% else %}<div class="empty-state"><span class="empty-mark">∅</span><div><strong>No matching entity found</strong><p>No indexed identifier matched this query.</p></div></div>{% endif %}</section>{% endif %}
+{% endblock %}

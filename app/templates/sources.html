@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Sources{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">OPERATIONS / SOURCES</p><h1>Data sources</h1><p class="lede">Each upload is tracked as an independent, resumable batch.</p></div><a class="button" href="/sources/new">＋ Add source</a></div>
+{% if sources %}<div class="table-wrap"><table><thead><tr><th>Source</th><th>Format</th><th>Records</th><th>Last batch</th><th>Uploaded by</th><th>Added</th></tr></thead><tbody>
+{% for source in sources %}<tr><td><a class="strong-link" href="/sources/{{ source.id }}/tables">{{ source.name }}</a><span class="subline">Source #{{ source.id }}</span></td><td><span class="type-label">{{ source.type|upper }}</span></td><td class="mono">{{ source.record_count }}</td><td>{% if source.status %}<span class="status status-{{ source.status }}">{{ source.status|replace('_',' ') }}</span>{% else %}<span class="muted">No batches</span>{% endif %}</td><td>{{ source.uploaded_by or '—' }}</td><td class="muted">{{ source.created_at.strftime('%Y-%m-%d') if source.created_at else '—' }}</td></tr>{% endfor %}
+</tbody></table></div>{% else %}<div class="empty-state"><span class="empty-mark">00</span><div><strong>No sources registered</strong><p>Upload a CSV or SQL dump to create your first source.</p></div><a class="button" href="/sources/new">Add source</a></div>{% endif %}
+{% endblock %}

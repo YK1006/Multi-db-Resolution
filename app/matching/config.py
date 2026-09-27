@@ -1,0 +1,1 @@
+MATCH_HIERARCHY = ["email", "phone", "username", "member_id"]

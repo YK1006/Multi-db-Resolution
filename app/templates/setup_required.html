@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Connect Neon{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">INITIAL SETUP / DATABASE</p><h1>Connect the repository</h1><p class="lede">The web application is running, but no PostgreSQL connection is configured yet.</p></div></div>
+<section class="form-panel setup-panel">
+  <p class="eyebrow">NEON POSTGRESQL</p>
+  <h2>Configure the database connection</h2>
+  <p class="muted">Add your Neon connection string as <code>DATABASE_URL</code> in the project-root <code>.env</code> file, then run <code>schema.sql</code> in Neon's SQL Editor. Restart Uvicorn after changing the environment.</p>
+  <pre class="setup-code">DATABASE_URL=postgresql://user:password@host/database?sslmode=require</pre>
+  <div class="form-actions"><a class="text-link" href="/docs">API documentation →</a><a class="button" href="/sources/new">Open app</a></div>
+</section>
+{% endblock %}

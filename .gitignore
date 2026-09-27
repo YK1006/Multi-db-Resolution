@@ -6,4 +6,4 @@ __pycache__/
 .pytest_cache/
 data/database_large.csv
 data/uploads/
-.env.example/
+
